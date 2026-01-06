@@ -3,18 +3,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useVoiceStore } from './voiceStore';
 
-vi.mock('../lib/realtime', () => {
+vi.mock('../lib/providers', () => {
   return {
-    RealtimeClient: class {
-      connect() {
-        return Promise.resolve();
-      }
-      reconnect() {
-        return Promise.resolve();
-      }
-      disconnect() {
-        return undefined;
-      }
+    createRealtimeProvider: () => {
+      return {
+        connect: () => Promise.resolve(),
+        reconnect: () => Promise.resolve(),
+        disconnect: () => undefined,
+        startMic: () => Promise.resolve(),
+        stopMic: () => undefined,
+        speak: () => Promise.resolve(),
+      };
     },
   };
 });

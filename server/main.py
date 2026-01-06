@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from server import __version__
+from server.api.local_realtime import router as local_realtime_router
 from server.api.realtime import router as realtime_router
 from server.api.routes import router as api_router
 
@@ -22,3 +23,4 @@ app.add_middleware(
 
 app.include_router(api_router)
 app.include_router(realtime_router)
+app.include_router(local_realtime_router)

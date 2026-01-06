@@ -2,7 +2,8 @@ import { create } from 'zustand';
 
 import { ERROR_MESSAGES } from '../constants/ui';
 import { buildApiUrl } from '../lib/api';
-import { RealtimeClient } from '../lib/realtime';
+import { createRealtimeProvider } from '../lib/providers';
+import type { IRealtimeProvider } from '../lib/providers';
 import type {
   NetworkMetrics,
   VoiceError,
@@ -17,7 +18,7 @@ const defaultNetworkMetrics: NetworkMetrics = {
   quality: 'UNKNOWN',
 };
 
-let realtimeClient: RealtimeClient | null = null;
+let realtimeClient: IRealtimeProvider | null = null;
 
 async function createSession(): Promise<VoiceSession> {
   const response = await fetch(buildApiUrl('/api/sessions'), {
@@ -86,9 +87,12 @@ export const useVoiceStore = create<VoiceStore>((set, get) => ({
     set({ status: 'CONNECTING', error: null });
     try {
       const session = await createSession();
+      const provider =
+        (import.meta.env.VITE_REALTIME_PROVIDER as string | undefined) ??
+        'openai';
       const client =
         realtimeClient ??
-        new RealtimeClient({
+        createRealtimeProvider(provider, {
           onStatusChange: (status) =>
             set((state) =>
               state.status === 'EMERGENCY'
@@ -125,6 +129,7 @@ export const useVoiceStore = create<VoiceStore>((set, get) => ({
         });
       realtimeClient = client;
       await client.connect(session.sessionId);
+      await client.startMic();
       set({ session });
     } catch (error) {
       set({ status: 'FAILED', error: buildError(error as Error) });
@@ -132,6 +137,7 @@ export const useVoiceStore = create<VoiceStore>((set, get) => ({
   },
 
   stopVoice: () => {
+    realtimeClient?.stopMic();
     realtimeClient?.disconnect();
     set({
       session: null,

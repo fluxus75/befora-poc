@@ -1,0 +1,42 @@
+{
+  "scenarios": {
+    "normal_flow": [
+      {
+        "step": "greeting",
+        "user_input": "안녕하세요",
+        "delay_ms": 500,
+        "vad_duration_ms": 1200,
+        "streaming_chunks": ["안녕", "하세요"]
+      },
+      {
+        "step": "chief_complaint",
+        "user_input": "머리가 아파요",
+        "delay_ms": 600,
+        "vad_duration_ms": 1500,
+        "streaming_chunks": ["머리가", " 아파요"]
+      }
+    ],
+    "emergency_flow": [
+      {
+        "step": "emergency_keyword",
+        "user_input": "갑자기 가슴이 너무 아파요",
+        "delay_ms": 400,
+        "vad_duration_ms": 2000,
+        "streaming_chunks": ["갑자기", " 가슴이", " 너무", " 아파요"]
+      }
+    ],
+    "error_cases": [
+      {
+        "step": "empty_transcript",
+        "user_input": "",
+        "delay_ms": 800,
+        "vad_duration_ms": 500
+      },
+      {
+        "step": "network_disconnect",
+        "trigger_error": "connection_lost",
+        "delay_ms": 2000
+      }
+    ]
+  }
+}

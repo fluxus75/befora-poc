@@ -7,9 +7,11 @@ import {
 import { buildApiUrl } from './api';
 import type {
   NetworkMetrics,
+  NetworkStatus,
   RealtimeEvent,
   TranscriptItem,
 } from '../types/voice';
+import type { RealtimeProviderOptions } from './providers/types';
 
 const OPENAI_WEBRTC_ENDPOINT = 'https://api.openai.com/v1/realtime/calls';
 const OPENAI_BETA_HEADER = 'realtime=v1';
@@ -17,39 +19,6 @@ const OPENAI_BETA_HEADER = 'realtime=v1';
 const DEFAULT_ICE_SERVERS: RTCIceServer[] = [
   { urls: 'stun:stun.l.google.com:19302' },
 ];
-
-type StatusHandler = (status: RealtimeStatus) => void;
-type ErrorHandler = (error: Error) => void;
-type TranscriptHandler = (item: TranscriptItem) => void;
-type StreamingHandler = (text: string | null) => void;
-type AgentStreamingHandler = (text: string | null) => void;
-type StepUpdateHandler = (currentStep: string, emergency: boolean) => void;
-type AudioLevelHandler = (level: number) => void;
-type VadHandler = (active: boolean) => void;
-type NetworkHandler = (metrics: NetworkMetrics) => void;
-
-export type RealtimeStatus =
-  | 'IDLE'
-  | 'CONNECTING'
-  | 'CONNECTED'
-  | 'LISTENING'
-  | 'PROCESSING'
-  | 'RECONNECTING'
-  | 'FAILED'
-  | 'EMERGENCY';
-
-interface RealtimeClientOptions {
-  onStatusChange: StatusHandler;
-  onError: ErrorHandler;
-  onTranscript: TranscriptHandler;
-  onStreaming: StreamingHandler;
-  onAgentStreaming: AgentStreamingHandler;
-  onAgentTranscript: TranscriptHandler;
-  onAudioLevel: AudioLevelHandler;
-  onVadChange: VadHandler;
-  onNetworkMetrics: NetworkHandler;
-  onStepUpdate: StepUpdateHandler;
-}
 
 export class RealtimeClient {
   private sessionId: string | null = null;
@@ -65,19 +34,19 @@ export class RealtimeClient {
   private reconnectAttempts = 0;
   private manualDisconnect = false;
 
-  private readonly onStatusChange: StatusHandler;
-  private readonly onError: ErrorHandler;
-  private readonly onTranscript: TranscriptHandler;
-  private readonly onStreaming: StreamingHandler;
-  private readonly onAgentStreaming: AgentStreamingHandler;
-  private readonly onAgentTranscript: TranscriptHandler;
-  private readonly onAudioLevel: AudioLevelHandler;
-  private readonly onVadChange: VadHandler;
-  private readonly onNetworkMetrics: NetworkHandler;
-  private readonly onStepUpdate: StepUpdateHandler;
+  private readonly onStatusChange: (status: NetworkStatus) => void;
+  private readonly onError: (error: Error) => void;
+  private readonly onTranscript: (item: TranscriptItem) => void;
+  private readonly onStreaming: (text: string | null) => void;
+  private readonly onAgentStreaming: (text: string | null) => void;
+  private readonly onAgentTranscript: (item: TranscriptItem) => void;
+  private readonly onAudioLevel: (level: number) => void;
+  private readonly onVadChange: (active: boolean) => void;
+  private readonly onNetworkMetrics: (metrics: NetworkMetrics) => void;
+  private readonly onStepUpdate: (currentStep: string, emergency: boolean) => void;
   private agentTextBuffer = '';
 
-  constructor(options: RealtimeClientOptions) {
+  constructor(options: RealtimeProviderOptions) {
     this.onStatusChange = options.onStatusChange;
     this.onError = options.onError;
     this.onTranscript = options.onTranscript;

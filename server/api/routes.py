@@ -1,7 +1,12 @@
+import json
 from datetime import datetime, timezone
+from pathlib import Path
+
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
 
 from server import __version__
+from server.config import settings
 from server.services.session_store import (
     create_session as create_session_state,
     get_session as get_session_state,
@@ -64,3 +69,14 @@ def process_turn(
         emergency=response.is_emergency,
         slots=response.slots,
     )
+
+
+@router.get("/api/mock-scenarios")
+def get_mock_scenarios() -> JSONResponse:
+    """Return mock transcripts for the realtime mock provider."""
+    path = Path(settings.mock_scenario_path)
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Mock scenario not found")
+    with path.open("r", encoding="utf-8") as file:
+        data = json.load(file)
+    return JSONResponse(content=data)

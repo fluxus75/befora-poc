@@ -35,6 +35,25 @@ class Settings(BaseSettings):
     realtime_max_tokens: int = Field(
         default=4096, ge=1, le=16384, validation_alias="REALTIME_MAX_TOKENS"
     )
+    realtime_provider: Literal["openai", "mock", "local"] = Field(
+        default="openai", validation_alias="REALTIME_PROVIDER"
+    )
+    mock_scenario_path: str = Field(
+        default="server/fixtures/mock_transcripts.json",
+        validation_alias="MOCK_SCENARIO_PATH",
+    )
+    mock_latency_ms: int = Field(
+        default=500, ge=0, validation_alias="MOCK_LATENCY_MS"
+    )
+    local_stt_model: str = Field(
+        default="base", validation_alias="LOCAL_STT_MODEL"
+    )
+    local_tts_engine: Literal["browser", "coqui", "piper"] = Field(
+        default="browser", validation_alias="LOCAL_TTS_ENGINE"
+    )
+    local_llm_endpoint: str | None = Field(
+        default=None, validation_alias="LOCAL_LLM_ENDPOINT"
+    )
 
     # Ephemeral Token Settings
     ephemeral_token_expire_seconds: int = Field(
