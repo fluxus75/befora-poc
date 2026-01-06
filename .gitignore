@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Build
+dist/
+.vite/
+
+# Environment
+.env*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# Claude Code (개인 설정)
+.claude/
+
+# Security - 절대 커밋 금지
+*.pem
+*.key
+secrets/
+
+# Application specific
+*.log
+*.sqlite
+*.db
+
+# SRD - 절대 커밋 금지
+SRD/

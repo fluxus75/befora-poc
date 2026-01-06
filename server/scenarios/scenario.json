@@ -1,0 +1,994 @@
+{
+    "scenario_id": "neuro_pre_appointment_history_taking_v0",
+    "version": "0.1",
+    "language": "ko-KR",
+    "timezone": "Asia/Seoul",
+    "estimated_minutes": {
+        "min": 3,
+        "max": 6
+    },
+    "policy": {
+        "no_diagnosis": true,
+        "single_question_at_a_time": true,
+        "avoid_medical_advice": true,
+        "emergency_mode": {
+            "strong_red_flag_action": "SCRIPT_ONLY_END",
+            "fallback_trigger_action": "FALLBACK_OR_SCRIPT_WITH_MAX_2_FOLLOWUPS"
+        }
+    },
+    "references": {
+        "emergency_keywords": "emergency_keywords.json"
+    },
+    "globals": {
+        "max_turns": 60,
+        "max_silence_seconds": 12,
+        "retry_on_no_response": {
+            "max_retries": 1,
+            "reprompt_node": "REPROMPT_GENERIC"
+        }
+    },
+    "context": {
+        "clinic": "신경과",
+        "call_window": "D-1",
+        "persona": "Warm, patient-friendly, short sentences"
+    },
+    "emergency": {
+        "enabled": true,
+        "source_ref": "emergency_keywords.json",
+        "on_strong_red_flag": {
+            "jump_to": "EMERGENCY_ENTRY",
+            "mode": "SCRIPT_ONLY_END"
+        },
+        "on_fallback_trigger": {
+            "jump_to": "EMERGENCY_ENTRY",
+            "mode": "FALLBACK_OR_SCRIPT",
+            "max_followup_questions": 2
+        }
+    },
+    "slots": {
+        "consent_ok": null,
+        "preferred_callback_time": null,
+        "chief_complaint": null,
+        "onset_timeframe": null,
+        "onset_is_acute": null,
+        "symptom_track": null,
+        "cog_primary_issue": null,
+        "cog_course": null,
+        "cog_adl_impact": null,
+        "cog_sleep": null,
+        "cog_mood": null,
+        "recent_fall_or_syncope": null,
+        "dizzy_character": null,
+        "dizzy_trigger": null,
+        "dizzy_assoc_ear": null,
+        "dizzy_assoc_nausea": null,
+        "dizzy_neuro_redflag": null,
+        "headache_location_quality": null,
+        "headache_severity_0_10": null,
+        "headache_frequency_duration": null,
+        "headache_redflag": null,
+        "tremor_context": null,
+        "tremor_slow_rigid": null,
+        "tremor_fall_risk": null,
+        "med_list": null,
+        "med_recent_change": null,
+        "allergy_history": null,
+        "major_pmh": null,
+        "acute_change_last_48h": null,
+        "summary_confirmed": null,
+        "patient_agenda": null
+    },
+    "routing": {
+        "symptom_track": {
+            "tracks": [
+                {
+                    "id": "COGNITIVE",
+                    "when": {
+                        "any_contains": [
+                            "기억",
+                            "기억력",
+                            "깜빡",
+                            "인지",
+                            "치매",
+                            "단어가",
+                            "이름이"
+                        ]
+                    },
+                    "to": "Q2A_1"
+                },
+                {
+                    "id": "DIZZINESS",
+                    "when": {
+                        "any_contains": [
+                            "어지",
+                            "현기",
+                            "빙글",
+                            "휘청",
+                            "균형",
+                            "비틀"
+                        ]
+                    },
+                    "to": "Q2B_1"
+                },
+                {
+                    "id": "HEADACHE",
+                    "when": {
+                        "any_contains": [
+                            "두통",
+                            "머리가",
+                            "머리 아",
+                            "편두통"
+                        ]
+                    },
+                    "to": "Q2C_1"
+                },
+                {
+                    "id": "TREMOR",
+                    "when": {
+                        "any_contains": [
+                            "떨",
+                            "진전",
+                            "손이 떨",
+                            "파킨슨",
+                            "경직",
+                            "느려"
+                        ]
+                    },
+                    "to": "Q2D_1"
+                }
+            ],
+            "default": {
+                "id": "OTHER",
+                "to": "Q1_1_CLARIFY"
+            }
+        },
+        "onset_acute_detection": {
+            "acute_phrases": [
+                "오늘",
+                "어제",
+                "방금",
+                "몇 시간",
+                "갑자기",
+                "갑작",
+                "순간",
+                "갑자기 시작"
+            ],
+            "acute_true_to": "EMERGENCY_ENTRY"
+        }
+    },
+    "nodes": [
+        {
+            "id": "START",
+            "type": "system",
+            "text": "Session start",
+            "transitions": [
+                {
+                    "to": "Q0_1"
+                }
+            ]
+        },
+        {
+            "id": "Q0_1",
+            "type": "question",
+            "text": "안녕하세요. 내일 신경과 진료 전에 몇 가지 여쭤보려고 연락드렸어요. 지금 3~5분 정도 괜찮으세요?",
+            "collect": [
+                "consent_ok"
+            ],
+            "extractors": [
+                {
+                    "slot": "consent_ok",
+                    "type": "yes_no",
+                    "yes": [
+                        "네",
+                        "예",
+                        "괜찮",
+                        "가능"
+                    ],
+                    "no": [
+                        "아니",
+                        "지금은",
+                        "바쁘",
+                        "안 돼"
+                    ]
+                }
+            ],
+            "transitions": [
+                {
+                    "when": "consent_ok == true",
+                    "to": "Q0_2"
+                },
+                {
+                    "when": "consent_ok == false",
+                    "to": "END_RESCHEDULE"
+                },
+                {
+                    "to": "Q0_2"
+                }
+            ]
+        },
+        {
+            "id": "END_RESCHEDULE",
+            "type": "question",
+            "text": "알겠습니다. 그럼 언제쯤 다시 연락드리면 편하실까요?",
+            "collect": [
+                "preferred_callback_time"
+            ],
+            "extractors": [
+                {
+                    "slot": "preferred_callback_time",
+                    "type": "free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "END"
+                }
+            ]
+        },
+        {
+            "id": "Q0_2",
+            "type": "message",
+            "text": "저는 진단을 하지는 않고요, 내일 진료에 도움이 되도록 말씀을 정리해 드릴게요.",
+            "transitions": [
+                {
+                    "to": "Q1_1"
+                }
+            ]
+        },
+        {
+            "id": "Q1_1",
+            "type": "question",
+            "text": "요즘 가장 불편한 증상이 뭐예요? 한 가지만 먼저 말씀해 주세요.",
+            "collect": [
+                "chief_complaint"
+            ],
+            "extractors": [
+                {
+                    "slot": "chief_complaint",
+                    "type": "free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "ROUTE_TRACK"
+                }
+            ]
+        },
+        {
+            "id": "Q1_1_CLARIFY",
+            "type": "question",
+            "text": "말씀하신 내용 중에서, 가장 불편한 증상이 기억 문제인지, 어지럼인지, 두통인지 중에 어떤 쪽에 더 가까울까요?",
+            "collect": [
+                "symptom_track"
+            ],
+            "extractors": [
+                {
+                    "slot": "symptom_track",
+                    "type": "choice",
+                    "choices": [
+                        {
+                            "value": "COGNITIVE",
+                            "synonyms": [
+                                "기억",
+                                "인지",
+                                "치매"
+                            ]
+                        },
+                        {
+                            "value": "DIZZINESS",
+                            "synonyms": [
+                                "어지",
+                                "현기",
+                                "균형"
+                            ]
+                        },
+                        {
+                            "value": "HEADACHE",
+                            "synonyms": [
+                                "두통",
+                                "머리"
+                            ]
+                        },
+                        {
+                            "value": "TREMOR",
+                            "synonyms": [
+                                "떨",
+                                "진전",
+                                "파킨슨"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "transitions": [
+                {
+                    "when": "symptom_track == 'COGNITIVE'",
+                    "to": "Q2A_1"
+                },
+                {
+                    "when": "symptom_track == 'DIZZINESS'",
+                    "to": "Q2B_1"
+                },
+                {
+                    "when": "symptom_track == 'HEADACHE'",
+                    "to": "Q2C_1"
+                },
+                {
+                    "when": "symptom_track == 'TREMOR'",
+                    "to": "Q2D_1"
+                },
+                {
+                    "to": "Q1_2"
+                }
+            ]
+        },
+        {
+            "id": "ROUTE_TRACK",
+            "type": "router",
+            "router": "symptom_track",
+            "input_slots": [
+                "chief_complaint"
+            ],
+            "set_slot": {
+                "symptom_track": "AUTO"
+            },
+            "transitions": [
+                {
+                    "when": "route_to == 'Q2A_1'",
+                    "to": "Q2A_1",
+                    "set": {
+                        "symptom_track": "COGNITIVE"
+                    }
+                },
+                {
+                    "when": "route_to == 'Q2B_1'",
+                    "to": "Q2B_1",
+                    "set": {
+                        "symptom_track": "DIZZINESS"
+                    }
+                },
+                {
+                    "when": "route_to == 'Q2C_1'",
+                    "to": "Q2C_1",
+                    "set": {
+                        "symptom_track": "HEADACHE"
+                    }
+                },
+                {
+                    "when": "route_to == 'Q2D_1'",
+                    "to": "Q2D_1",
+                    "set": {
+                        "symptom_track": "TREMOR"
+                    }
+                },
+                {
+                    "to": "Q1_1_CLARIFY"
+                }
+            ]
+        },
+        {
+            "id": "Q1_2",
+            "type": "question",
+            "text": "그 증상은 언제부터 시작됐을까요? 대략이라도 괜찮아요.",
+            "collect": [
+                "onset_timeframe",
+                "onset_is_acute"
+            ],
+            "extractors": [
+                {
+                    "slot": "onset_timeframe",
+                    "type": "free_text"
+                },
+                {
+                    "slot": "onset_is_acute",
+                    "type": "contains_any",
+                    "source": "onset_timeframe",
+                    "any": [
+                        "오늘",
+                        "어제",
+                        "방금",
+                        "몇 시간",
+                        "갑자기",
+                        "갑작",
+                        "순간"
+                    ]
+                }
+            ],
+            "transitions": [
+                {
+                    "when": "onset_is_acute == true",
+                    "to": "EMERGENCY_ENTRY"
+                },
+                {
+                    "to": "TRACK_RETURN"
+                }
+            ]
+        },
+        {
+            "id": "TRACK_RETURN",
+            "type": "router",
+            "router": "symptom_track",
+            "input_slots": [
+                "chief_complaint"
+            ],
+            "transitions": [
+                {
+                    "when": "symptom_track == 'COGNITIVE'",
+                    "to": "Q2A_1"
+                },
+                {
+                    "when": "symptom_track == 'DIZZINESS'",
+                    "to": "Q2B_1"
+                },
+                {
+                    "when": "symptom_track == 'HEADACHE'",
+                    "to": "Q2C_1"
+                },
+                {
+                    "when": "symptom_track == 'TREMOR'",
+                    "to": "Q2D_1"
+                },
+                {
+                    "to": "Q2A_1"
+                }
+            ]
+        },
+        /* ---------------------------
+       TRACK A: COGNITIVE
+    ---------------------------- */
+        {
+            "id": "Q2A_1",
+            "type": "question",
+            "text": "기억력이라고 하셨는데요, 어떤 점이 제일 불편하세요? 예를 들어 이름이 잘 안 떠오른다거나, 약속을 잊는다거나요.",
+            "collect": [
+                "cog_primary_issue"
+            ],
+            "extractors": [
+                {
+                    "slot": "cog_primary_issue",
+                    "type": "free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q2A_2"
+                }
+            ]
+        },
+        {
+            "id": "Q2A_2",
+            "type": "question",
+            "text": "시간이 갈수록 비슷한가요, 조금씩 더 심해지나요, 아니면 왔다 갔다 하나요?",
+            "collect": [
+                "cog_course"
+            ],
+            "extractors": [
+                {
+                    "slot": "cog_course",
+                    "type": "free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q2A_3"
+                }
+            ]
+        },
+        {
+            "id": "Q2A_3",
+            "type": "question",
+            "text": "예전엔 혼자 하시던 일을 요즘은 도움받게 된 게 있을까요? 예를 들면 돈 계산, 약 챙기기, 길 찾기 같은 것요.",
+            "collect": [
+                "cog_adl_impact"
+            ],
+            "extractors": [
+                {
+                    "slot": "cog_adl_impact",
+                    "type": "free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q2A_4"
+                }
+            ]
+        },
+        {
+            "id": "Q2A_4",
+            "type": "question",
+            "text": "요즘 잠은 어떠세요? 기분은 어떠세요?",
+            "collect": [
+                "cog_sleep",
+                "cog_mood"
+            ],
+            "extractors": [
+                {
+                    "slot": "cog_sleep",
+                    "type": "free_text"
+                },
+                {
+                    "slot": "cog_mood",
+                    "type": "free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q2A_5"
+                }
+            ]
+        },
+        {
+            "id": "Q2A_5",
+            "type": "question",
+            "text": "최근에 넘어지신 적 있거나, 갑자기 정신이 멍해진 적이 있었나요?",
+            "collect": [
+                "recent_fall_or_syncope"
+            ],
+            "extractors": [
+                {
+                    "slot": "recent_fall_or_syncope",
+                    "type": "yes_no"
+                }
+            ],
+            "transitions": [
+                {
+                    "when": "recent_fall_or_syncope == true",
+                    "to": "EMERGENCY_ENTRY"
+                },
+                {
+                    "to": "Q3_1"
+                }
+            ]
+        },
+        /* ---------------------------
+       TRACK B: DIZZINESS
+    ---------------------------- */
+        {
+            "id": "Q2B_1",
+            "type": "question",
+            "text": "어지럽다고 하셨는데, 빙글빙글 도는 느낌인가요, 아니면 휘청거리거나 머리가 띵한 느낌인가요?",
+            "collect": [
+                "dizzy_character"
+            ],
+            "extractors": [
+                {
+                    "slot": "dizzy_character",
+                    "type": "free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q2B_2"
+                }
+            ]
+        },
+        {
+            "id": "Q2B_2",
+            "type": "question",
+            "text": "고개를 돌리거나 일어날 때 심해지나요?",
+            "collect": [
+                "dizzy_trigger"
+            ],
+            "extractors": [
+                {
+                    "slot": "dizzy_trigger",
+                    "type": "free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q2B_3"
+                }
+            ]
+        },
+        {
+            "id": "Q2B_3",
+            "type": "question",
+            "text": "귀가 먹먹하거나 삐 소리(이명), 구토가 같이 있나요?",
+            "collect": [
+                "dizzy_assoc_ear",
+                "dizzy_assoc_nausea"
+            ],
+            "extractors": [
+                {
+                    "slot": "dizzy_assoc_ear",
+                    "type": "free_text"
+                },
+                {
+                    "slot": "dizzy_assoc_nausea",
+                    "type": "free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q2B_4"
+                }
+            ]
+        },
+        {
+            "id": "Q2B_4",
+            "type": "question",
+            "text": "어지러울 때 한쪽 팔다리에 힘이 빠지거나, 말이 어눌해진 적은 없으세요?",
+            "collect": [
+                "dizzy_neuro_redflag"
+            ],
+            "extractors": [
+                {
+                    "slot": "dizzy_neuro_redflag",
+                    "type": "yes_no"
+                }
+            ],
+            "transitions": [
+                {
+                    "when": "dizzy_neuro_redflag == true",
+                    "to": "EMERGENCY_ENTRY"
+                },
+                {
+                    "to": "Q3_1"
+                }
+            ]
+        },
+        /* ---------------------------
+       TRACK C: HEADACHE
+    ---------------------------- */
+        {
+            "id": "Q2C_1",
+            "type": "question",
+            "text": "두통은 주로 어디가 아프세요? 찌르는 듯, 지끈지끈, 띵한 느낌 중 어떤가요?",
+            "collect": [
+                "headache_location_quality"
+            ],
+            "extractors": [
+                {
+                    "slot": "headache_location_quality",
+                    "type": "free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q2C_2"
+                }
+            ]
+        },
+        {
+            "id": "Q2C_2",
+            "type": "question",
+            "text": "0부터 10까지로 하면, 가장 심할 때는 몇 점 정도였을까요?",
+            "collect": [
+                "headache_severity_0_10"
+            ],
+            "extractors": [
+                {
+                    "slot": "headache_severity_0_10",
+                    "type": "number_0_10"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q2C_3"
+                }
+            ]
+        },
+        {
+            "id": "Q2C_3",
+            "type": "question",
+            "text": "하루에 얼마나 자주, 한 번 시작하면 얼마나 오래 가나요?",
+            "collect": [
+                "headache_frequency_duration"
+            ],
+            "extractors": [
+                {
+                    "slot": "headache_frequency_duration",
+                    "type": "free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q2C_4"
+                }
+            ]
+        },
+        {
+            "id": "Q2C_4",
+            "type": "question",
+            "text": "갑자기 벼락처럼 시작했거나, 살면서 가장 심한 두통이었나요? 열이 나거나 목이 뻣뻣한가요?",
+            "collect": [
+                "headache_redflag"
+            ],
+            "extractors": [
+                {
+                    "slot": "headache_redflag",
+                    "type": "yes_no"
+                }
+            ],
+            "transitions": [
+                {
+                    "when": "headache_redflag == true",
+                    "to": "EMERGENCY_ENTRY"
+                },
+                {
+                    "to": "Q3_1"
+                }
+            ]
+        },
+        /* ---------------------------
+       TRACK D: TREMOR / MOVEMENT
+    ---------------------------- */
+        {
+            "id": "Q2D_1",
+            "type": "question",
+            "text": "손이 떨리는 건 가만히 있을 때 더 심한가요, 아니면 물건 잡을 때 더 심한가요?",
+            "collect": [
+                "tremor_context"
+            ],
+            "extractors": [
+                {
+                    "slot": "tremor_context",
+                    "type": "free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q2D_2"
+                }
+            ]
+        },
+        {
+            "id": "Q2D_2",
+            "type": "question",
+            "text": "걸음이 느려지거나 몸이 뻣뻣해진 느낌은 없으세요?",
+            "collect": [
+                "tremor_slow_rigid"
+            ],
+            "extractors": [
+                {
+                    "slot": "tremor_slow_rigid",
+                    "type": "yes_no"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q2D_3"
+                }
+            ]
+        },
+        {
+            "id": "Q2D_3",
+            "type": "question",
+            "text": "최근에 발이 잘 안 떨어지거나, 자주 넘어질 뻔한 적이 있나요?",
+            "collect": [
+                "tremor_fall_risk"
+            ],
+            "extractors": [
+                {
+                    "slot": "tremor_fall_risk",
+                    "type": "yes_no"
+                }
+            ],
+            "transitions": [
+                {
+                    "when": "tremor_fall_risk == true",
+                    "to": "EMERGENCY_ENTRY"
+                },
+                {
+                    "to": "Q3_1"
+                }
+            ]
+        },
+        /* ---------------------------
+       COMMON QUESTIONS
+    ---------------------------- */
+        {
+            "id": "Q3_1",
+            "type": "question",
+            "text": "지금 드시고 있는 약이 있으세요? 혈압약, 당뇨약, 수면제 같은 것도 포함해서요.",
+            "collect": [
+                "med_list"
+            ],
+            "extractors": [
+                {
+                    "slot": "med_list",
+                    "type": "free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q3_2"
+                }
+            ]
+        },
+        {
+            "id": "Q3_2",
+            "type": "question",
+            "text": "최근 한 달 안에 약이 새로 추가되거나, 용량이 바뀐 게 있나요?",
+            "collect": [
+                "med_recent_change"
+            ],
+            "extractors": [
+                {
+                    "slot": "med_recent_change",
+                    "type": "yes_no_or_free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q3_3"
+                }
+            ]
+        },
+        {
+            "id": "Q3_3",
+            "type": "question",
+            "text": "약 드시고 두드러기나 숨이 차는 알레르기 반응을 겪으신 적이 있나요?",
+            "collect": [
+                "allergy_history"
+            ],
+            "extractors": [
+                {
+                    "slot": "allergy_history",
+                    "type": "free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "when": "allergy_history containsAny(['숨', '호흡곤란', '숨이 차'])",
+                    "to": "EMERGENCY_ENTRY"
+                },
+                {
+                    "to": "Q3_4"
+                }
+            ]
+        },
+        {
+            "id": "Q3_4",
+            "type": "question",
+            "text": "예전에 큰 병으로 치료받으신 적이 있나요? 예를 들면 뇌졸중, 심장질환, 당뇨 같은 것요.",
+            "collect": [
+                "major_pmh"
+            ],
+            "extractors": [
+                {
+                    "slot": "major_pmh",
+                    "type": "free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q3_5"
+                }
+            ]
+        },
+        {
+            "id": "Q3_5",
+            "type": "question",
+            "text": "오늘이나 어제 갑자기 확 달라진 증상은 없으셨어요?",
+            "collect": [
+                "acute_change_last_48h"
+            ],
+            "extractors": [
+                {
+                    "slot": "acute_change_last_48h",
+                    "type": "yes_no"
+                }
+            ],
+            "transitions": [
+                {
+                    "when": "acute_change_last_48h == true",
+                    "to": "EMERGENCY_ENTRY"
+                },
+                {
+                    "to": "Q4_1"
+                }
+            ]
+        },
+        /* ---------------------------
+       SUMMARY & END
+    ---------------------------- */
+        {
+            "id": "Q4_1",
+            "type": "question",
+            "text": "정리하면, 말씀하신 내용은 (요약) 이렇게 이해해도 맞을까요?",
+            "collect": [
+                "summary_confirmed"
+            ],
+            "extractors": [
+                {
+                    "slot": "summary_confirmed",
+                    "type": "yes_no"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q4_2"
+                }
+            ]
+        },
+        {
+            "id": "Q4_2",
+            "type": "question",
+            "text": "내일 교수님께 꼭 전달했으면 하는 게 하나라도 있을까요?",
+            "collect": [
+                "patient_agenda"
+            ],
+            "extractors": [
+                {
+                    "slot": "patient_agenda",
+                    "type": "free_text"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "Q4_3"
+                }
+            ]
+        },
+        {
+            "id": "Q4_3",
+            "type": "message",
+            "text": "말씀 감사합니다. 내일 진료에 도움이 되도록 정리해서 전달해드릴게요.",
+            "transitions": [
+                {
+                    "to": "END"
+                }
+            ]
+        },
+        /* ---------------------------
+       EMERGENCY FLOW
+    ---------------------------- */
+        {
+            "id": "EMERGENCY_ENTRY",
+            "type": "message",
+            "text": "말씀하신 내용은 빨리 확인이 필요할 수 있어요.",
+            "transitions": [
+                {
+                    "to": "E_1"
+                }
+            ]
+        },
+        {
+            "id": "E_1",
+            "type": "question",
+            "text": "지금 혼자 계세요?",
+            "collect": [],
+            "extractors": [
+                {
+                    "slot": "_temp_alone",
+                    "type": "yes_no"
+                }
+            ],
+            "transitions": [
+                {
+                    "to": "E_2"
+                }
+            ]
+        },
+        {
+            "id": "E_2",
+            "type": "message",
+            "text": "지금 증상이 진행 중이거나 악화되고 있으면 119 또는 가까운 응급실로 바로 가시는 게 안전합니다. 저는 진단은 못하지만, 안전을 위해 즉시 진료가 필요할 수 있어요.",
+            "transitions": [
+                {
+                    "to": "END"
+                }
+            ]
+        },
+        /* ---------------------------
+       REPROMPT / END
+    ---------------------------- */
+        {
+            "id": "REPROMPT_GENERIC",
+            "type": "message",
+            "text": "잠시만요. 제가 다시 한 번 여쭤볼게요.",
+            "transitions": [
+                {
+                    "to": "LAST_NODE"
+                }
+            ]
+        },
+        {
+            "id": "END",
+            "type": "end",
+            "text": "Session end"
+        }
+    ]
+}

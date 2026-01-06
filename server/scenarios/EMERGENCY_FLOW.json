@@ -1,0 +1,282 @@
+{
+    "version": "0.1",
+    "language": "ko-KR",
+    "region": "KR",
+    "updated_at": "2026-01-04",
+    "references": {
+        "keywords_source": "emergency_keywords.json"
+    },
+    "policy": {
+        "tone": "calm_clear_patient_friendly",
+        "no_diagnosis": true,
+        "no_treatment_advice": true,
+        "priority": "safety_first",
+        "default_action_for_strong_red_flag": "SCRIPT_ONLY_END",
+        "default_action_for_fallback_trigger": "SCRIPT_WITH_MAX_2_FOLLOWUPS_THEN_END_OR_ESCALATE"
+    },
+    "routing": {
+        "strong_red_flag": {
+            "script_id": "KR_STRONG_DEFAULT",
+            "end_after": true
+        },
+        "fallback_trigger": {
+            "script_id": "KR_FALLBACK_DEFAULT",
+            "end_after": true,
+            "max_followups": 2
+        }
+    },
+    "scripts": [
+        {
+            "id": "KR_STRONG_DEFAULT",
+            "name": "Strong red flag – immediate safety guidance (KR)",
+            "use_when": {
+                "match_type": "strong_red_flag",
+                "any_category": [
+                    "neuro_stroke_like",
+                    "consciousness",
+                    "headache_secondary",
+                    "infection_cns",
+                    "cardio_respiratory",
+                    "self_harm",
+                    "violence_risk"
+                ]
+            },
+            "steps": [
+                {
+                    "type": "message",
+                    "text": "말씀하신 내용은 빨리 확인이 필요할 수 있어요."
+                },
+                {
+                    "type": "question",
+                    "slot": "_temp_alone",
+                    "text": "지금 혼자 계세요?",
+                    "expected": "yes_no"
+                },
+                {
+                    "type": "message",
+                    "text": "지금 증상이 진행 중이거나 악화되고 있으면 119에 전화하시거나, 가까운 응급실로 바로 가시는 게 안전합니다."
+                },
+                {
+                    "type": "message",
+                    "text": "저는 진단을 할 수는 없지만, 안전을 위해 즉시 진료가 필요할 수 있어요."
+                },
+                {
+                    "type": "message",
+                    "text": "지금은 안전을 먼저 확인하셔야 해서, 이 통화는 여기서 마칠게요."
+                }
+            ]
+        },
+        {
+            "id": "KR_FALLBACK_DEFAULT",
+            "name": "Fallback trigger – short verification then safety guidance (KR)",
+            "use_when": {
+                "match_type": "fallback_trigger",
+                "any_category": [
+                    "acute_change",
+                    "trauma",
+                    "systemic",
+                    "allergy",
+                    "consciousness"
+                ]
+            },
+            "steps": [
+                {
+                    "type": "message",
+                    "text": "지금 말씀하신 내용은 안전을 먼저 확인해보는 게 좋겠어요."
+                },
+                {
+                    "type": "question",
+                    "slot": "_temp_emergency_now",
+                    "text": "지금도 증상이 계속되고 있거나, 점점 더 심해지고 있나요?",
+                    "expected": "yes_no"
+                },
+                {
+                    "type": "question",
+                    "slot": "_temp_new_neuro_symptoms",
+                    "text": "혹시 지금 한쪽 팔다리에 힘이 빠지거나, 말이 어눌해지거나, 갑자기 의식이 흐려지는 증상은 없으세요?",
+                    "expected": "yes_no"
+                },
+                {
+                    "type": "message",
+                    "text": "만약 지금도 진행 중이거나 위 질문에 해당된다면, 119에 전화하시거나 가까운 응급실로 바로 가시는 게 안전합니다."
+                },
+                {
+                    "type": "message",
+                    "text": "저는 진단은 못하지만, 안전을 위해 빠른 진료가 필요할 수 있어요."
+                },
+                {
+                    "type": "message",
+                    "text": "지금은 안전을 우선으로 확인하실 수 있도록, 이 통화는 여기서 마칠게요."
+                }
+            ]
+        },
+        {
+            "id": "KR_SELF_HARM",
+            "name": "Self-harm risk – immediate crisis guidance (KR)",
+            "use_when": {
+                "match_type": "strong_red_flag",
+                "any_category": [
+                    "self_harm"
+                ]
+            },
+            "steps": [
+                {
+                    "type": "message",
+                    "text": "지금 말씀하신 내용은 매우 중요해요. 혼자 감당하지 않으셔도 됩니다."
+                },
+                {
+                    "type": "question",
+                    "slot": "_temp_safe_place",
+                    "text": "지금 안전한 곳에 계신가요? 주변에 함께 있어줄 수 있는 분이 계세요?",
+                    "expected": "yes_no_or_free_text"
+                },
+                {
+                    "type": "message",
+                    "text": "지금 즉시 도움이 필요할 수 있어요. 위험하다고 느껴지면 119에 전화하시거나 가까운 응급실로 바로 가세요."
+                },
+                {
+                    "type": "message",
+                    "text": "저는 진단이나 상담을 대신할 수는 없지만, 지금은 안전이 가장 우선입니다. 이 통화는 여기서 마치고, 바로 도움을 받으실 수 있도록 해주세요."
+                }
+            ]
+        },
+        {
+            "id": "KR_VIOLENCE_RISK",
+            "name": "Risk of harming others – immediate safety guidance (KR)",
+            "use_when": {
+                "match_type": "strong_red_flag",
+                "any_category": [
+                    "violence_risk"
+                ]
+            },
+            "steps": [
+                {
+                    "type": "message",
+                    "text": "지금 말씀하신 내용은 안전과 관련해서 매우 중요해요."
+                },
+                {
+                    "type": "message",
+                    "text": "지금 당장 누군가가 다칠 위험이 있다면 112 또는 119에 바로 연락해 주세요."
+                },
+                {
+                    "type": "message",
+                    "text": "저는 진단이나 판단을 할 수는 없지만, 안전을 위해 즉시 도움을 받는 것이 필요할 수 있어요. 이 통화는 여기서 마칠게요."
+                }
+            ]
+        },
+        {
+            "id": "KR_STROKE_FOCAL_NEURO",
+            "name": "Stroke-like symptoms – focused safety guidance (KR)",
+            "use_when": {
+                "match_type": "strong_red_flag",
+                "any_category": [
+                    "neuro_stroke_like"
+                ]
+            },
+            "steps": [
+                {
+                    "type": "message",
+                    "text": "말씀하신 증상은 빨리 확인이 필요할 수 있어요."
+                },
+                {
+                    "type": "message",
+                    "text": "한쪽 힘 빠짐, 말이 어눌함, 얼굴 비대칭, 시야 이상 같은 증상은 응급으로 확인해야 할 수 있습니다."
+                },
+                {
+                    "type": "message",
+                    "text": "지금도 증상이 있거나 방금 시작된 거라면 119에 전화하시거나 가까운 응급실로 바로 가시는 게 안전합니다."
+                },
+                {
+                    "type": "message",
+                    "text": "저는 진단을 할 수는 없지만, 안전을 위해 즉시 진료가 필요할 수 있어요. 이 통화는 여기서 마칠게요."
+                }
+            ]
+        },
+        {
+            "id": "KR_SEIZURE_OR_LOC",
+            "name": "Seizure / loss of consciousness – safety guidance (KR)",
+            "use_when": {
+                "match_type": "strong_red_flag",
+                "any_category": [
+                    "consciousness"
+                ]
+            },
+            "steps": [
+                {
+                    "type": "message",
+                    "text": "말씀하신 내용은 즉시 확인이 필요할 수 있어요."
+                },
+                {
+                    "type": "message",
+                    "text": "경련이나 의식 저하는 응급으로 평가가 필요할 수 있습니다."
+                },
+                {
+                    "type": "message",
+                    "text": "지금 상황이 진행 중이거나 다시 발생할 수 있다면 119에 전화하시거나 가까운 응급실로 바로 가세요."
+                },
+                {
+                    "type": "message",
+                    "text": "저는 진단을 할 수는 없지만, 안전이 가장 우선입니다. 이 통화는 여기서 마칠게요."
+                }
+            ]
+        },
+        {
+            "id": "KR_THUNDERCLAP_HEADACHE",
+            "name": "Thunderclap / worst headache – safety guidance (KR)",
+            "use_when": {
+                "match_type": "strong_red_flag",
+                "any_category": [
+                    "headache_secondary"
+                ]
+            },
+            "steps": [
+                {
+                    "type": "message",
+                    "text": "말씀하신 두통은 빨리 확인이 필요할 수 있어요."
+                },
+                {
+                    "type": "message",
+                    "text": "갑자기 벼락처럼 시작했거나 살면서 가장 심한 두통, 또는 열/목 경직이 동반되면 응급으로 확인해야 할 수 있습니다."
+                },
+                {
+                    "type": "message",
+                    "text": "지금도 증상이 있거나 악화되고 있다면 119에 전화하시거나 가까운 응급실로 바로 가시는 게 안전합니다."
+                },
+                {
+                    "type": "message",
+                    "text": "저는 진단은 못하지만, 안전을 위해 즉시 진료가 필요할 수 있어요. 이 통화는 여기서 마칠게요."
+                }
+            ]
+        },
+        {
+            "id": "KR_RESP_CHEST",
+            "name": "Breathing difficulty / chest pain – safety guidance (KR)",
+            "use_when": {
+                "match_type": "strong_red_flag",
+                "any_category": [
+                    "cardio_respiratory"
+                ]
+            },
+            "steps": [
+                {
+                    "type": "message",
+                    "text": "숨이 차거나 가슴 통증은 응급으로 확인이 필요할 수 있어요."
+                },
+                {
+                    "type": "message",
+                    "text": "지금도 증상이 있으면 119에 전화하시거나 가까운 응급실로 바로 가시는 게 안전합니다."
+                },
+                {
+                    "type": "message",
+                    "text": "저는 진단을 할 수는 없지만, 안전이 가장 우선입니다. 이 통화는 여기서 마칠게요."
+                }
+            ]
+        }
+    ],
+    "implementation_notes": [
+        "매칭 우선순위: category-specific script(KR_SELF_HARM 등) > KR_STRONG_DEFAULT > KR_FALLBACK_DEFAULT",
+        "strong_red_flag는 기본적으로 SCRIPT_ONLY_END로 처리(자유 생성 최소화).",
+        "fallback_trigger는 최대 2개의 확인 질문 후, 위험이 명확하면 강등급으로 승격하여 종료한다.",
+        "문구는 병원/기관 톤에 맞게 조정 가능하되, 119/응급실/진단 불가/안전 우선 요소는 유지한다."
+    ]
+}

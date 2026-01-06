@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Frontend: lint-staged
+pnpm exec lint-staged
+
+# Backend: Python linting
+if command -v uv > /dev/null 2>&1; then
+  echo "Running Python linters..."
+  uv run ruff check server/ shared/ --fix
+  uv run ruff format server/ shared/
+fi

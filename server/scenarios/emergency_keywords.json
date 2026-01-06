@@ -1,0 +1,256 @@
+{
+    "version": "0.1",
+    "language": "ko-KR",
+    "updated_at": "2026-01-04",
+    "policy": {
+        "strong_red_flags": {
+            "action": "ENTER_EMERGENCY_MODE_AND_END",
+            "response_mode": "SCRIPT_ONLY",
+            "max_followup_questions": 0
+        },
+        "fallback_triggers": {
+            "action": "ENTER_EMERGENCY_MODE",
+            "response_mode": "FALLBACK_OR_SCRIPT",
+            "max_followup_questions": 2
+        }
+    },
+    "strong_red_flags": [
+        {
+            "id": "NEURO_STROKE_WEAKNESS",
+            "category": "neuro_stroke_like",
+            "description": "편측 마비/근력 저하 (뇌졸중 의심)",
+            "keywords": [
+                "한쪽 마비",
+                "한쪽이 마비",
+                "한쪽 팔이 안 움직",
+                "한쪽 다리가 안 움직",
+                "한쪽 힘이 안 들어",
+                "팔다리에 힘이 빠",
+                "손에 힘이 없",
+                "다리에 힘이 없"
+            ]
+        },
+        {
+            "id": "NEURO_STROKE_SPEECH",
+            "category": "neuro_stroke_like",
+            "description": "언어 장애/구음 장애 (말 어눌, 실어증 의심)",
+            "keywords": [
+                "말이 안 나",
+                "말이 잘 안 나",
+                "말이 어눌",
+                "발음이 이상",
+                "말이 꼬이",
+                "말이 느려",
+                "말이 갑자기 이상",
+                "말을 못 하겠"
+            ]
+        },
+        {
+            "id": "NEURO_STROKE_FACE",
+            "category": "neuro_stroke_like",
+            "description": "안면 마비/안면 비대칭",
+            "keywords": [
+                "입이 돌아",
+                "얼굴이 비뚤",
+                "얼굴이 돌아",
+                "한쪽 얼굴이 처지",
+                "한쪽 입꼬리가 내려"
+            ]
+        },
+        {
+            "id": "NEURO_STROKE_VISION",
+            "category": "neuro_stroke_like",
+            "description": "급성 시야 이상/복시",
+            "keywords": [
+                "갑자기 안 보여",
+                "한쪽 눈이 안 보여",
+                "시야가 안 보여",
+                "시야가 흐려",
+                "두 개로 보여",
+                "복시",
+                "눈앞이 캄캄"
+            ]
+        },
+        {
+            "id": "LOSS_OF_CONSCIOUSNESS",
+            "category": "consciousness",
+            "description": "의식소실/실신",
+            "keywords": [
+                "쓰러졌",
+                "기절",
+                "기절했",
+                "의식을 잃",
+                "정신을 잃",
+                "정신이 나갔",
+                "기억이 끊겼",
+                "잠깐 의식이 없"
+            ]
+        },
+        {
+            "id": "SEIZURE",
+            "category": "consciousness",
+            "description": "경련/발작",
+            "keywords": [
+                "경련",
+                "발작",
+                "간질",
+                "몸이 떨려",
+                "거품",
+                "눈이 뒤집",
+                "손발이 떨려 멈추지"
+            ]
+        },
+        {
+            "id": "THUNDERCLAP_HEADACHE",
+            "category": "headache_secondary",
+            "description": "벼락 두통/급작스런 최악 두통",
+            "keywords": [
+                "벼락 두통",
+                "갑자기 터질 것 같",
+                "살면서 제일 심한 두통",
+                "최악의 두통",
+                "갑자기 너무 심한 두통"
+            ]
+        },
+        {
+            "id": "FEVER_NECK_STIFFNESS",
+            "category": "infection_cns",
+            "description": "발열 + 목 경직 (뇌수막염 등 의심)",
+            "keywords": [
+                "열이 38",
+                "고열",
+                "열이 많이 나",
+                "목이 뻣뻣",
+                "목이 굳",
+                "목을 못 움직",
+                "고열에 목이 아프"
+            ]
+        },
+        {
+            "id": "RESPIRATORY_DISTRESS",
+            "category": "cardio_respiratory",
+            "description": "호흡곤란",
+            "keywords": [
+                "숨이 차",
+                "호흡곤란",
+                "숨을 못 쉬",
+                "숨쉬기 힘들",
+                "가슴이 답답해서 숨이"
+            ]
+        },
+        {
+            "id": "CHEST_PAIN",
+            "category": "cardio_respiratory",
+            "description": "흉통/심근경색 의심 증상",
+            "keywords": [
+                "가슴이 아파",
+                "흉통",
+                "가슴 통증",
+                "가슴이 눌리",
+                "가슴이 쥐어짜"
+            ]
+        },
+        {
+            "id": "SELF_HARM",
+            "category": "self_harm",
+            "description": "자해/자살 의사",
+            "keywords": [
+                "죽고 싶",
+                "자살",
+                "목숨을 끊",
+                "스스로 해치",
+                "자해"
+            ]
+        },
+        {
+            "id": "HARM_OTHERS",
+            "category": "violence_risk",
+            "description": "타해 의사",
+            "keywords": [
+                "남을 해치",
+                "사람을 해치",
+                "죽이고 싶",
+                "때리고 싶"
+            ]
+        }
+    ],
+    "fallback_triggers": [
+        {
+            "id": "ACUTE_WORSENING",
+            "category": "acute_change",
+            "description": "급격한 악화/새로운 중증 증상",
+            "keywords": [
+                "갑자기 더 심해",
+                "계속 악화",
+                "오늘 처음",
+                "처음 겪",
+                "갑자기 이상해",
+                "급격히 나빠"
+            ]
+        },
+        {
+            "id": "FALL_HEAD_INJURY",
+            "category": "trauma",
+            "description": "낙상/머리 부딪힘",
+            "keywords": [
+                "넘어졌",
+                "낙상",
+                "머리를 부딪",
+                "머리 박",
+                "머리를 쿵",
+                "머리에 혹"
+            ]
+        },
+        {
+            "id": "PERSISTENT_VOMITING",
+            "category": "systemic",
+            "description": "구토가 지속되거나 조절되지 않음",
+            "keywords": [
+                "구토가 멈추지",
+                "계속 토",
+                "토가 안 멈춰",
+                "먹으면 토"
+            ]
+        },
+        {
+            "id": "DRUG_ALLERGY_SIGNS",
+            "category": "allergy",
+            "description": "약물 알레르기 의심(특히 호흡 증상 동반 시 강등급으로 승격)",
+            "keywords": [
+                "두드러기",
+                "부어올라",
+                "입술이 부어",
+                "눈이 부어",
+                "가려워",
+                "약 먹고 숨이",
+                "약 먹고 붓"
+            ]
+        },
+        {
+            "id": "CONFUSION_DELIRIUM",
+            "category": "consciousness",
+            "description": "급성 혼동/섬망",
+            "keywords": [
+                "정신이 이상",
+                "횡설수설",
+                "사람을 못 알아",
+                "갑자기 헷갈려",
+                "갑자기 혼란"
+            ]
+        }
+    ],
+    "normalization": {
+        "match_mode": "SUBSTRING",
+        "case_sensitive": false,
+        "trim_whitespace": true,
+        "strip_punctuation": true,
+        "korean_spacing_variants": true,
+        "hangul_jamo_normalization": true
+    },
+    "notes": [
+        "키워드는 한국어 어미/조사 변형이 많으므로 '부분 문자열(SUBSTRING) 매칭'을 기본으로 한다.",
+        "동일 의미 표현(예: '말이 어눌', '발음이 이상', '말이 잘 안 나옴')은 운영 중 지속적으로 동의어를 추가한다.",
+        "Strong Red Flag 매칭 시에는 생성형 응답을 최소화하고 사전 정의된 응급 스크립트로 전환한다.",
+        "Fallback Trigger는 1~2개 확인 질문 후 Strong Red Flag로 승격하거나, 안전 안내 후 종료한다."
+    ]
+}
