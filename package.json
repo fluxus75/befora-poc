@@ -2,6 +2,7 @@
   "name": "befora-poc",
   "private": true,
   "version": "0.1.0",
+  "type": "module",
   "description": "Befora Voice AI Agent PoC",
   "packageManager": "pnpm@9.15.0",
   "scripts": {
@@ -21,7 +22,7 @@
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react": "^7.34.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "husky": "^9.0.0",
     "lint-staged": "^15.2.0",
     "prettier": "^3.2.0",

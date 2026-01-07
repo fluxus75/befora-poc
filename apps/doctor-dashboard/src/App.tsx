@@ -1,14 +1,14 @@
-import { useEffect } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { ReactNode, useEffect } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
-import Header from './components/Header';
-import LoginPage from './pages/LoginPage';
-import NotFoundPage from './pages/NotFoundPage';
-import SessionDetailPage from './pages/SessionDetailPage';
-import SessionListPage from './pages/SessionListPage';
-import { useAuthStore } from './stores/authStore';
+import Header from "./components/Header";
+import LoginPage from "./pages/LoginPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import SessionDetailPage from "./pages/SessionDetailPage";
+import SessionListPage from "./pages/SessionListPage";
+import { useAuthStore } from "./stores/authStore";
 
-function ProtectedRoute({ children }: { children: JSX.Element }) {
+function ProtectedRoute({ children }: { children: ReactNode }) {
   const user = useAuthStore((state) => state.user);
   if (!user) {
     return <Navigate to="/login" replace />;
