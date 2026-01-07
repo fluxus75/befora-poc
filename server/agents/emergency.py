@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import re
-import string
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -17,7 +16,7 @@ class EmergencyMatch:
 
 
 _PUNCTUATION = ".,!?/\\-()[]{}<>:;\"'`~@#$%^&*_+=|"
-_PUNCTUATION_TABLE = str.maketrans({ch: " " for ch in _PUNCTUATION})
+_PUNCTUATION_TABLE = str.maketrans(dict.fromkeys(_PUNCTUATION, " "))
 
 
 def _strip_punctuation(text: str) -> str:
@@ -163,7 +162,9 @@ class EmergencyFlowRunner:
                 return script
         return self.scripts[0] if self.scripts else None
 
-    def _save_answer(self, user_input: str, step: dict[str, Any], slot_setter: callable) -> None:
+    def _save_answer(
+        self, user_input: str, step: dict[str, Any], slot_setter: callable
+    ) -> None:
         slot = step.get("slot")
         expected = step.get("expected")
         value = self._extract_expected(user_input, expected)

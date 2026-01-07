@@ -20,7 +20,9 @@ def test_route_symptom_track_matches_keywords() -> None:
 def test_route_symptom_track_falls_back_to_default() -> None:
     routing = {
         "symptom_track": {
-            "tracks": [{"id": "HEADACHE", "when": {"any_contains": ["두통"]}, "to": "Q2C_1"}],
+            "tracks": [
+                {"id": "HEADACHE", "when": {"any_contains": ["두통"]}, "to": "Q2C_1"}
+            ],
             "default": {"id": "OTHER", "to": "Q1_1_CLARIFY"},
         }
     }

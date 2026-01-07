@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Iterable
+from collections.abc import Iterable
 
 
 class LocalRealtimeService:
@@ -10,12 +10,12 @@ class LocalRealtimeService:
     def __init__(self, model_size: str, sample_rate: int = 16000) -> None:
         self.sample_rate = sample_rate
         try:
-            from faster_whisper import WhisperModel
             import webrtcvad
+            from faster_whisper import WhisperModel
         except ImportError as exc:  # pragma: no cover - runtime guard
             raise RuntimeError(
                 "Local realtime dependencies missing. Install with: "
-                "uv pip install -e \".[local-realtime]\""
+                'uv pip install -e ".[local-realtime]"'
             ) from exc
 
         self.whisper = WhisperModel(
@@ -34,7 +34,7 @@ class LocalRealtimeService:
         audio = await asyncio.to_thread(self._pcm_to_float32, pcm_bytes)
         return await asyncio.to_thread(self._transcribe_audio, audio)
 
-    def _transcribe_audio(self, audio: "object") -> str:
+    def _transcribe_audio(self, audio: object) -> str:
         segments, _info = self.whisper.transcribe(
             audio,
             language="ko",
@@ -45,13 +45,13 @@ class LocalRealtimeService:
         return " ".join(part for part in parts if part).strip()
 
     @staticmethod
-    def _pcm_to_float32(pcm_bytes: bytes) -> "object":
+    def _pcm_to_float32(pcm_bytes: bytes) -> object:
         try:
             import numpy as np
         except ImportError as exc:  # pragma: no cover - runtime guard
             raise RuntimeError(
                 "Local realtime dependencies missing. Install with: "
-                "uv pip install -e \".[local-realtime]\""
+                'uv pip install -e ".[local-realtime]"'
             ) from exc
         return np.frombuffer(pcm_bytes, np.int16).astype("float32") / 32768.0
 

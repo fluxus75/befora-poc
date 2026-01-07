@@ -4,7 +4,9 @@ from server.agents.dsl_runner import DSLScenarioRunner
 
 
 def test_yes_no_extractor_uses_custom_tokens() -> None:
-    scenario_path = Path(__file__).resolve().parent.parent / "scenarios" / "scenario.json"
+    scenario_path = (
+        Path(__file__).resolve().parent.parent / "scenarios" / "scenario.json"
+    )
     runner = DSLScenarioRunner(scenario_path)
     extractor = {
         "type": "yes_no",
@@ -17,7 +19,9 @@ def test_yes_no_extractor_uses_custom_tokens() -> None:
 
 
 def test_yes_no_or_free_text_falls_back_to_text() -> None:
-    scenario_path = Path(__file__).resolve().parent.parent / "scenarios" / "scenario.json"
+    scenario_path = (
+        Path(__file__).resolve().parent.parent / "scenarios" / "scenario.json"
+    )
     runner = DSLScenarioRunner(scenario_path)
     extractor = {
         "type": "yes_no_or_free_text",

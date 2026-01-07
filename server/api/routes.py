@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
@@ -7,10 +7,12 @@ from fastapi.responses import JSONResponse
 
 from server import __version__
 from server.config import settings
+from server.services.session_store import create_session as create_session_state
+from server.services.session_store import get_session as get_session_state
 from server.services.session_store import (
-    create_session as create_session_state,
-    get_session as get_session_state,
+    record_session_log,
     update_session_status,
+    upsert_session_slots,
 )
 from shared.schemas.health import HealthResponse
 from shared.schemas.realtime import ProcessTurnRequest, ProcessTurnResponse
@@ -25,7 +27,7 @@ def health() -> HealthResponse:
     return HealthResponse(
         status="ok",
         version=__version__,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
     )
 
 
@@ -33,15 +35,6 @@ def health() -> HealthResponse:
 def create_session(payload: SessionCreate) -> SessionResponse:
     """Create a new voice session."""
     state = create_session_state(payload)
-    return state.session
-
-
-@router.get("/api/sessions/{session_id}", response_model=SessionResponse)
-def get_session(session_id: str) -> SessionResponse:
-    """Get session by ID."""
-    state = get_session_state(session_id)
-    if not state:
-        raise HTTPException(status_code=404, detail="Session not found")
     return state.session
 
 
@@ -59,9 +52,11 @@ def process_turn(
         raise HTTPException(status_code=404, detail="Session not found")
     response = state.runner.process(payload.user_input)
     if response.is_emergency:
-        update_session_status(session_id, "emergency")
+        update_session_status(session_id, "emergency_terminated")
     elif response.is_complete:
         update_session_status(session_id, "completed")
+    record_session_log(session_id, payload.user_input, response.text)
+    upsert_session_slots(session_id, response.slots)
     return ProcessTurnResponse(
         agent_response=response.text,
         current_node=response.current_node,

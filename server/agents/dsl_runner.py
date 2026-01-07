@@ -7,7 +7,11 @@ from pathlib import Path
 from typing import Any
 
 from server.agents.base import ScenarioResponse
-from server.agents.emergency import EmergencyDetector, EmergencyFlowRunner, EmergencyMatch
+from server.agents.emergency import (
+    EmergencyDetector,
+    EmergencyFlowRunner,
+    EmergencyMatch,
+)
 from server.agents.router import route_symptom_track
 from server.agents.scenario_loader import ScenarioDefinition, load_scenario
 from server.services.slot_manager import SlotManager
@@ -151,7 +155,11 @@ class DSLScenarioRunner:
                 current = self._route_node(node)
                 continue
             if node_type == "end":
-                return ("\n".join(messages) if messages else node.get("text", "")), current, True
+                return (
+                    ("\n".join(messages) if messages else node.get("text", "")),
+                    current,
+                    True,
+                )
             if node_type == "question":
                 prompt = node.get("text", "")
                 if messages and prompt:
@@ -184,7 +192,9 @@ class DSLScenarioRunner:
         if not transitions:
             return _TransitionResult(next_node=node.get("id", ""), updates={})
         first = transitions[0]
-        return _TransitionResult(next_node=first.get("to"), updates=first.get("set", {}))
+        return _TransitionResult(
+            next_node=first.get("to"), updates=first.get("set", {})
+        )
 
     def _evaluate_transitions(self, node: dict[str, Any]) -> _TransitionResult:
         for transition in node.get("transitions", []):

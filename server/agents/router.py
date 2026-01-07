@@ -10,7 +10,9 @@ class RouteResult:
     track_id: str
 
 
-def route_symptom_track(chief_complaint: str | None, routing: dict[str, Any]) -> RouteResult:
+def route_symptom_track(
+    chief_complaint: str | None, routing: dict[str, Any]
+) -> RouteResult:
     symptom_config = routing.get("symptom_track", {})
     tracks = symptom_config.get("tracks", [])
     default = symptom_config.get("default", {})

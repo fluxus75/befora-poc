@@ -19,14 +19,19 @@ export default [
         },
       },
       globals: {
+        // Core
         console: "readonly",
         document: "readonly",
         window: "readonly",
         fetch: "readonly",
+        crypto: "readonly",
+        // Timers
         setTimeout: "readonly",
         clearTimeout: "readonly",
         setInterval: "readonly",
         clearInterval: "readonly",
+        // URL/Fetch API
+        URL: "readonly",
         URLSearchParams: "readonly",
         FormData: "readonly",
         Blob: "readonly",
@@ -36,14 +41,28 @@ export default [
         Headers: "readonly",
         AbortController: "readonly",
         AbortSignal: "readonly",
+        // Events
         Event: "readonly",
         EventTarget: "readonly",
         CustomEvent: "readonly",
+        MessageEvent: "readonly",
+        DOMException: "readonly",
+        // Media/Audio
         MediaStream: "readonly",
         MediaRecorder: "readonly",
         WebSocket: "readonly",
         Audio: "readonly",
         AudioContext: "readonly",
+        AnalyserNode: "readonly",
+        ScriptProcessorNode: "readonly",
+        SpeechSynthesisUtterance: "readonly",
+        HTMLAudioElement: "readonly",
+        // WebRTC
+        RTCPeerConnection: "readonly",
+        RTCDataChannel: "readonly",
+        RTCIceServer: "readonly",
+        RTCStatsReport: "readonly",
+        // Storage/Navigation
         navigator: "readonly",
         localStorage: "readonly",
         sessionStorage: "readonly",

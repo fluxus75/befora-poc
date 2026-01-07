@@ -495,7 +495,7 @@ private resetInactivityTimer(): void {
 - [ ] WebSocket 기반 오디오 스트리밍
 - [ ] VAD 구현
 - [ ] 브라우저 TTS fallback 개선
-- [ ] (옵션) Ollama LLM 연동
+- [ ] Ollama LLM 연동
 
 ### Phase 3: OpenAI Provider 최적화 (1주)
 - [ ] Push-to-Talk 모드 구현
