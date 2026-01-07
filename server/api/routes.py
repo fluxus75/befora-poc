@@ -10,7 +10,9 @@ from server.config import settings
 from server.services.session_store import (
     create_session as create_session_state,
     get_session as get_session_state,
+    record_session_log,
     update_session_status,
+    upsert_session_slots,
 )
 from shared.schemas.health import HealthResponse
 from shared.schemas.realtime import ProcessTurnRequest, ProcessTurnResponse
@@ -36,15 +38,6 @@ def create_session(payload: SessionCreate) -> SessionResponse:
     return state.session
 
 
-@router.get("/api/sessions/{session_id}", response_model=SessionResponse)
-def get_session(session_id: str) -> SessionResponse:
-    """Get session by ID."""
-    state = get_session_state(session_id)
-    if not state:
-        raise HTTPException(status_code=404, detail="Session not found")
-    return state.session
-
-
 @router.post(
     "/api/sessions/{session_id}/process",
     response_model=ProcessTurnResponse,
@@ -59,9 +52,11 @@ def process_turn(
         raise HTTPException(status_code=404, detail="Session not found")
     response = state.runner.process(payload.user_input)
     if response.is_emergency:
-        update_session_status(session_id, "emergency")
+        update_session_status(session_id, "emergency_terminated")
     elif response.is_complete:
         update_session_status(session_id, "completed")
+    record_session_log(session_id, payload.user_input, response.text)
+    upsert_session_slots(session_id, response.slots)
     return ProcessTurnResponse(
         agent_response=response.text,
         current_node=response.current_node,
