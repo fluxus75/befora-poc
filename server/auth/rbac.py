@@ -6,7 +6,9 @@ from server.auth.session import CurrentUser, get_current_user
 
 
 def require_role(allowed_roles: list[str]):
-    def dependency(current_user: CurrentUser = Depends(get_current_user)) -> CurrentUser:
+    def dependency(
+        current_user: CurrentUser = Depends(get_current_user),
+    ) -> CurrentUser:
         if current_user.role not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

@@ -17,7 +17,16 @@ REALTIME_MODELS = [
 # Available Voice Options (10 voices as of 2025-01)
 # Reference: https://platform.openai.com/docs/guides/realtime
 RealtimeVoice = Literal[
-    "alloy", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse", "marin", "cedar"
+    "alloy",
+    "ash",
+    "ballad",
+    "coral",
+    "echo",
+    "sage",
+    "shimmer",
+    "verse",
+    "marin",
+    "cedar",
 ]
 
 VOICE_DESCRIPTIONS = {

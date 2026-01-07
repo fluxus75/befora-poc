@@ -21,13 +21,15 @@ from shared.schemas.session import (
     SlotUpdateRequest,
 )
 
-
 router = APIRouter(prefix="/api/sessions", tags=["sessions"])
 
 
 def _ensure_access(detail: SessionDetail, current_user: CurrentUser) -> None:
     if current_user.role == "doctor":
-        if not detail.assigned_doctor_id or detail.assigned_doctor_id != current_user.id:
+        if (
+            not detail.assigned_doctor_id
+            or detail.assigned_doctor_id != current_user.id
+        ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not assigned",
@@ -123,7 +125,9 @@ def update_status(
 ) -> SessionDetail:
     detail = get_session_detail(session_id)
     if not detail:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Session not found"
+        )
     _ensure_access(detail, current_user)
     if current_user.role == "doctor":
         if payload.status not in {"reviewed", "confirmed"}:

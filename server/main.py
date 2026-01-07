@@ -4,8 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from server import __version__
 from server.api.auth import router as auth_router
 from server.api.local_realtime import router as local_realtime_router
-from server.api.reports import router as reports_router
 from server.api.realtime import router as realtime_router
+from server.api.reports import router as reports_router
 from server.api.routes import router as api_router
 from server.api.sessions import router as sessions_router
 from server.db.database import initialize_db

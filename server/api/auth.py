@@ -16,7 +16,6 @@ from server.services.auth_store import (
 )
 from shared.schemas.auth import LoginRequest, LoginResponse, User
 
-
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 

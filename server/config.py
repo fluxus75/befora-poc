@@ -4,7 +4,6 @@ Configuration module for Befora POC.
 Loads environment variables and provides typed configuration objects.
 """
 
-import os
 from typing import Literal
 
 from pydantic import Field
@@ -25,10 +24,17 @@ class Settings(BaseSettings):
         validation_alias="REALTIME_MODEL",
     )
     realtime_voice: Literal[
-        "alloy", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse", "marin", "cedar"
-    ] = Field(
-        default="alloy", validation_alias="REALTIME_VOICE"
-    )
+        "alloy",
+        "ash",
+        "ballad",
+        "coral",
+        "echo",
+        "sage",
+        "shimmer",
+        "verse",
+        "marin",
+        "cedar",
+    ] = Field(default="alloy", validation_alias="REALTIME_VOICE")
     realtime_temperature: float = Field(
         default=0.8, ge=0.0, le=2.0, validation_alias="REALTIME_TEMPERATURE"
     )
@@ -42,12 +48,8 @@ class Settings(BaseSettings):
         default="server/fixtures/mock_transcripts.json",
         validation_alias="MOCK_SCENARIO_PATH",
     )
-    mock_latency_ms: int = Field(
-        default=500, ge=0, validation_alias="MOCK_LATENCY_MS"
-    )
-    local_stt_model: str = Field(
-        default="base", validation_alias="LOCAL_STT_MODEL"
-    )
+    mock_latency_ms: int = Field(default=500, ge=0, validation_alias="MOCK_LATENCY_MS")
+    local_stt_model: str = Field(default="base", validation_alias="LOCAL_STT_MODEL")
     local_tts_engine: Literal["browser", "coqui", "piper"] = Field(
         default="browser", validation_alias="LOCAL_TTS_ENGINE"
     )

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 
 @dataclass
@@ -17,20 +16,20 @@ class UserRecord:
 @dataclass
 class SessionRecord:
     id: str
-    patient_id_encrypted: Optional[str]
+    patient_id_encrypted: str | None
     status: str
     created_at: datetime
-    completed_at: Optional[datetime]
-    assigned_doctor_id: Optional[str]
-    reviewed_at: Optional[datetime]
-    confirmed_at: Optional[datetime]
+    completed_at: datetime | None
+    assigned_doctor_id: str | None
+    reviewed_at: datetime | None
+    confirmed_at: datetime | None
 
 
 @dataclass
 class SessionSlotRecord:
     session_id: str
     slot_key: str
-    slot_value_encrypted: Optional[str]
+    slot_value_encrypted: str | None
     created_at: datetime
 
 
@@ -38,8 +37,8 @@ class SessionSlotRecord:
 class SessionLogRecord:
     session_id: str
     turn_index: int
-    user_input: Optional[str]
-    agent_response: Optional[str]
+    user_input: str | None
+    agent_response: str | None
     timestamp: datetime
 
 

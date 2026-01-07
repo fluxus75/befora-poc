@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
@@ -9,7 +9,11 @@ from server import __version__
 from server.config import settings
 from server.services.session_store import (
     create_session as create_session_state,
+)
+from server.services.session_store import (
     get_session as get_session_state,
+)
+from server.services.session_store import (
     record_session_log,
     update_session_status,
     upsert_session_slots,
@@ -27,7 +31,7 @@ def health() -> HealthResponse:
     return HealthResponse(
         status="ok",
         version=__version__,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
     )
 
 

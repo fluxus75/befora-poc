@@ -9,7 +9,10 @@ from urllib.request import Request, urlopen
 
 from server.config import settings
 from server.constants.api_endpoints import REALTIME_SESSION_ENDPOINT
-from server.constants.realtime import AUDIO_FORMAT, SESSION_CONFIG, TURN_DETECTION_CONFIG
+from server.constants.realtime import (
+    SESSION_CONFIG,
+    TURN_DETECTION_CONFIG,
+)
 
 
 @dataclass

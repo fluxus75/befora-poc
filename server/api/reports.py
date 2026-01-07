@@ -10,13 +10,15 @@ from server.services.session_store import get_session_detail
 from shared.schemas.report import ReportData
 from shared.schemas.session import SessionDetail
 
-
 router = APIRouter(prefix="/api/sessions", tags=["reports"])
 
 
 def _ensure_access(detail: SessionDetail, current_user: CurrentUser) -> None:
     if current_user.role == "doctor":
-        if not detail.assigned_doctor_id or detail.assigned_doctor_id != current_user.id:
+        if (
+            not detail.assigned_doctor_id
+            or detail.assigned_doctor_id != current_user.id
+        ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not assigned",

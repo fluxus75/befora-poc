@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -42,7 +42,7 @@ _EMERGENCY_FLOW_PATH = (
 def create_session(payload: SessionCreate) -> SessionState:
     patient_id = payload.patient_id
     session_id = str(uuid4())
-    created_at = datetime.now(timezone.utc)
+    created_at = datetime.now(UTC)
     response = SessionResponse(
         session_id=session_id,
         status="active",
@@ -85,7 +85,7 @@ def record_session_log(
                 _next_turn_index(session_id),
                 user_input,
                 agent_response,
-                datetime.now(timezone.utc).isoformat(),
+                datetime.now(UTC).isoformat(),
             ),
         )
         connection.commit()
@@ -95,7 +95,7 @@ def upsert_session_slots(session_id: str, slots: dict) -> None:
     if not slots:
         return
     encrypted = _encrypt_slots(slots)
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     with get_connection() as connection:
         for slot_key, slot_value in encrypted.items():
             connection.execute(
@@ -210,7 +210,7 @@ def get_session_detail(session_id: str) -> SessionDetail | None:
 
 
 def add_session_note(session_id: str, doctor_id: str, note: str) -> SessionNote:
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     with get_connection() as connection:
         cursor = connection.execute(
             "INSERT INTO session_notes (session_id, doctor_id, note, created_at) "
@@ -237,7 +237,7 @@ def update_session_assignment(session_id: str, doctor_id: str | None) -> None:
 
 
 def set_session_status(session_id: str, status: str) -> None:
-    timestamp = datetime.now(timezone.utc).isoformat()
+    timestamp = datetime.now(UTC).isoformat()
     updates: dict[str, str] = {}
     if status == "completed":
         updates["completed_at"] = timestamp
@@ -262,7 +262,7 @@ def set_session_status(session_id: str, status: str) -> None:
 
 
 def _now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _parse_optional_dt(value: str | None) -> datetime | None:

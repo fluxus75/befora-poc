@@ -1,11 +1,10 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
 
 class SessionCreate(BaseModel):
-    patient_id: Optional[str] = None
+    patient_id: str | None = None
 
 
 class SessionResponse(BaseModel):
@@ -16,13 +15,13 @@ class SessionResponse(BaseModel):
 
 class SessionSlot(BaseModel):
     slot_key: str
-    slot_value: Optional[str] = None
+    slot_value: str | None = None
 
 
 class SessionLogEntry(BaseModel):
     turn_index: int
-    user_input: Optional[str] = None
-    agent_response: Optional[str] = None
+    user_input: str | None = None
+    agent_response: str | None = None
     timestamp: datetime
 
 
@@ -37,14 +36,14 @@ class SessionListItem(BaseModel):
     session_id: str
     status: str
     created_at: datetime
-    completed_at: Optional[datetime] = None
-    assigned_doctor_id: Optional[str] = None
-    reviewed_at: Optional[datetime] = None
-    confirmed_at: Optional[datetime] = None
+    completed_at: datetime | None = None
+    assigned_doctor_id: str | None = None
+    reviewed_at: datetime | None = None
+    confirmed_at: datetime | None = None
 
 
 class SessionDetail(SessionListItem):
-    patient_id: Optional[str] = None
+    patient_id: str | None = None
     slots: list[SessionSlot] = Field(default_factory=list)
     logs: list[SessionLogEntry] = Field(default_factory=list)
     notes: list[SessionNote] = Field(default_factory=list)
@@ -59,7 +58,7 @@ class SessionListResponse(BaseModel):
 
 class SlotUpdateItem(BaseModel):
     slot_key: str
-    slot_value: Optional[str] = None
+    slot_value: str | None = None
 
 
 class SlotUpdateRequest(BaseModel):
@@ -71,5 +70,5 @@ class SessionNoteCreate(BaseModel):
 
 
 class SessionStatusUpdateRequest(BaseModel):
-    status: Optional[str] = None
-    assigned_doctor_id: Optional[str] = None
+    status: str | None = None
+    assigned_doctor_id: str | None = None
