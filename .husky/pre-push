@@ -1,5 +1,4 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+#!/bin/bash
 
 # Codex 브랜치인 경우에만 자동 PR 생성
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
