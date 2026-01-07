@@ -30,6 +30,8 @@ jobs:
   backend:
     name: Backend (lint/test)
     runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: test-key-not-used-in-unit-tests
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
@@ -53,6 +55,7 @@ jobs:
     needs: [frontend, backend]
     env:
       VITE_REALTIME_PROVIDER: mock
+      OPENAI_API_KEY: test-key-not-used-in-e2e-tests
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
