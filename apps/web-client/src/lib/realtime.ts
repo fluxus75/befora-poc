@@ -132,7 +132,10 @@ export class RealtimeClient {
       });
       this.peerConnection = peerConnection;
 
-      const [track] = this.localStream.getAudioTracks();
+      const track = this.localStream.getAudioTracks()[0];
+      if (!track) {
+        throw new Error("오디오 트랙을 찾을 수 없습니다");
+      }
       peerConnection.addTrack(track, this.localStream);
 
       this.dataChannel = peerConnection.createDataChannel("oai-events");
@@ -149,7 +152,9 @@ export class RealtimeClient {
         this.remoteAudio = new Audio();
         this.remoteAudio.srcObject = remoteStream;
         this.remoteAudio.autoplay = true;
-        this.remoteAudio.playsInline = true;
+        (
+          this.remoteAudio as HTMLAudioElement & { playsInline: boolean }
+        ).playsInline = true;
         void this.remoteAudio.play().catch(() => undefined);
       };
 
@@ -444,7 +449,8 @@ export class RealtimeClient {
       this.analyser.getFloatTimeDomainData(buffer);
       let sum = 0;
       for (let i = 0; i < buffer.length; i += 1) {
-        sum += buffer[i] * buffer[i];
+        const sample = buffer[i] ?? 0;
+        sum += sample * sample;
       }
       const rms = Math.sqrt(sum / buffer.length);
       const level = Math.min(100, Math.round(rms * 200));

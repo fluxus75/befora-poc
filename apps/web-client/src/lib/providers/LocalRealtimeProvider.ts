@@ -1,16 +1,19 @@
-import { buildApiUrl } from '../api';
-import type { NetworkMetrics, TranscriptItem } from '../../types/voice';
-import type { IRealtimeProvider, RealtimeProviderOptions } from './IRealtimeProvider';
+import { buildApiUrl } from "../api";
+import type { NetworkMetrics, TranscriptItem } from "../../types/voice";
+import type {
+  IRealtimeProvider,
+  RealtimeProviderOptions,
+} from "./IRealtimeProvider";
 
 const DEFAULT_SAMPLE_RATE = 16000;
 const AUDIO_LEVEL_INTERVAL_MS = 300;
 const NETWORK_METRICS_INTERVAL_MS = 1000;
 
 type LocalEvent =
-  | { type: 'vad'; active: boolean }
-  | { type: 'transcript'; text: string }
-  | { type: 'error'; message: string }
-  | { type: 'status'; state: string };
+  | { type: "vad"; active: boolean }
+  | { type: "transcript"; text: string }
+  | { type: "error"; message: string }
+  | { type: "status"; state: string };
 
 export class LocalRealtimeProvider implements IRealtimeProvider {
   private sessionId: string | null = null;
@@ -28,7 +31,7 @@ export class LocalRealtimeProvider implements IRealtimeProvider {
   async connect(sessionId: string): Promise<void> {
     this.sessionId = sessionId;
     this.manualDisconnect = false;
-    this.options.onStatusChange('CONNECTING');
+    this.options.onStatusChange("CONNECTING");
     const sampleRate = this.getSampleRate();
     const wsUrl = this.buildWebSocketUrl(
       `/api/local-realtime/ws?session_id=${encodeURIComponent(sessionId)}&sample_rate=${sampleRate}`
@@ -40,7 +43,7 @@ export class LocalRealtimeProvider implements IRealtimeProvider {
     if (!this.sessionId) {
       return;
     }
-    this.options.onStatusChange('RECONNECTING');
+    this.options.onStatusChange("RECONNECTING");
     await this.connect(this.sessionId);
   }
 
@@ -51,7 +54,7 @@ export class LocalRealtimeProvider implements IRealtimeProvider {
       this.socket.close();
       this.socket = null;
     }
-    this.options.onStatusChange('IDLE');
+    this.options.onStatusChange("IDLE");
   }
 
   async startMic(): Promise<void> {
@@ -59,7 +62,9 @@ export class LocalRealtimeProvider implements IRealtimeProvider {
     if (this.localStream) {
       return;
     }
-    this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    this.localStream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    });
     const sampleRate = this.getSampleRate();
     this.audioContext = new AudioContext();
     const source = this.audioContext.createMediaStreamSource(this.localStream);
@@ -93,7 +98,7 @@ export class LocalRealtimeProvider implements IRealtimeProvider {
 
   stopMic(): void {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      this.socket.send(JSON.stringify({ type: 'stop' }));
+      this.socket.send(JSON.stringify({ type: "stop" }));
     }
     this.cleanupAudio();
   }
@@ -102,9 +107,9 @@ export class LocalRealtimeProvider implements IRealtimeProvider {
     if (!text.trim()) {
       return;
     }
-    if ('speechSynthesis' in window) {
+    if ("speechSynthesis" in window) {
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ko-KR';
+      utterance.lang = "ko-KR";
       window.speechSynthesis.speak(utterance);
     }
   }
@@ -114,17 +119,17 @@ export class LocalRealtimeProvider implements IRealtimeProvider {
       const socket = new WebSocket(url);
       socket.onopen = () => {
         this.socket = socket;
-        this.options.onStatusChange('CONNECTED');
-        this.options.onStatusChange('LISTENING');
+        this.options.onStatusChange("CONNECTED");
+        this.options.onStatusChange("LISTENING");
         resolve();
       };
       socket.onerror = () => {
-        reject(new Error('local_realtime_ws_error'));
+        reject(new Error("local_realtime_ws_error"));
       };
       socket.onclose = () => {
         this.socket = null;
         if (!this.manualDisconnect) {
-          this.options.onStatusChange('FAILED');
+          this.options.onStatusChange("FAILED");
         }
       };
       socket.onmessage = (event) => this.handleMessage(event);
@@ -133,12 +138,12 @@ export class LocalRealtimeProvider implements IRealtimeProvider {
 
   private async ensureSocketReady(): Promise<void> {
     if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
-      throw new Error('local_realtime_ws_not_ready');
+      throw new Error("local_realtime_ws_not_ready");
     }
   }
 
   private handleMessage(event: MessageEvent): void {
-    if (typeof event.data !== 'string') {
+    if (typeof event.data !== "string") {
       return;
     }
     let payload: LocalEvent;
@@ -150,17 +155,19 @@ export class LocalRealtimeProvider implements IRealtimeProvider {
     }
 
     switch (payload.type) {
-      case 'vad':
+      case "vad":
         this.options.onVadChange(payload.active);
-        this.options.onStatusChange(payload.active ? 'PROCESSING' : 'LISTENING');
+        this.options.onStatusChange(
+          payload.active ? "PROCESSING" : "LISTENING"
+        );
         return;
-      case 'transcript':
+      case "transcript":
         this.handleTranscript(payload.text);
         return;
-      case 'error':
+      case "error":
         this.options.onError(new Error(payload.message));
         return;
-      case 'status':
+      case "status":
       default:
         return;
     }
@@ -173,9 +180,9 @@ export class LocalRealtimeProvider implements IRealtimeProvider {
     }
     const item: TranscriptItem = {
       id: crypto.randomUUID(),
-      speaker: 'patient',
+      speaker: "patient",
       text: transcript,
-      status: 'CONFIRMED',
+      status: "CONFIRMED",
       timestamp: Date.now(),
     };
     this.options.onTranscript(item);
@@ -191,8 +198,8 @@ export class LocalRealtimeProvider implements IRealtimeProvider {
       const response = await fetch(
         buildApiUrl(`/api/sessions/${this.sessionId}/process`),
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ user_input: transcript }),
         }
       );
@@ -219,7 +226,8 @@ export class LocalRealtimeProvider implements IRealtimeProvider {
       this.analyser.getFloatTimeDomainData(buffer);
       let sum = 0;
       for (let i = 0; i < buffer.length; i += 1) {
-        sum += buffer[i] * buffer[i];
+        const sample = buffer[i] ?? 0;
+        sum += sample * sample;
       }
       const rms = Math.sqrt(sum / buffer.length);
       const level = Math.min(100, Math.round(rms * 200));
@@ -238,7 +246,7 @@ export class LocalRealtimeProvider implements IRealtimeProvider {
       rttMs: 60,
       jitterMs: 4,
       packetLossPercent: 0,
-      quality: 'GOOD',
+      quality: "GOOD",
     };
   }
 
@@ -269,8 +277,10 @@ export class LocalRealtimeProvider implements IRealtimeProvider {
 
   private buildWebSocketUrl(path: string): string {
     const base = import.meta.env.VITE_API_BASE_URL as string | undefined;
-    const url = base ? new URL(path, base) : new URL(path, window.location.origin);
-    url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+    const url = base
+      ? new URL(path, base)
+      : new URL(path, window.location.origin);
+    url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
     return url.toString();
   }
 
@@ -300,8 +310,12 @@ function downsampleBuffer(
     const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
     let sum = 0;
     let count = 0;
-    for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i += 1) {
-      sum += buffer[i];
+    for (
+      let i = offsetBuffer;
+      i < nextOffsetBuffer && i < buffer.length;
+      i += 1
+    ) {
+      sum += buffer[i] ?? 0;
       count += 1;
     }
     result[offsetResult] = count > 0 ? sum / count : 0;
@@ -314,7 +328,7 @@ function downsampleBuffer(
 function floatTo16BitPCM(input: Float32Array): Int16Array {
   const output = new Int16Array(input.length);
   for (let i = 0; i < input.length; i += 1) {
-    const s = Math.max(-1, Math.min(1, input[i]));
+    const s = Math.max(-1, Math.min(1, input[i] ?? 0));
     output[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
   }
   return output;

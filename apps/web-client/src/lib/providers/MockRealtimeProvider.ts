@@ -1,7 +1,10 @@
-import { buildApiUrl } from '../api';
-import type { NetworkMetrics, TranscriptItem } from '../../types/voice';
-import type { IRealtimeProvider, RealtimeProviderOptions } from './IRealtimeProvider';
-import type { MockScenarioPayload, MockScenarioStep } from './types';
+import { buildApiUrl } from "../api";
+import type { NetworkMetrics, TranscriptItem } from "../../types/voice";
+import type {
+  IRealtimeProvider,
+  RealtimeProviderOptions,
+} from "./IRealtimeProvider";
+import type { MockScenarioPayload, MockScenarioStep } from "./types";
 
 const DEFAULT_LATENCY_MS = 500;
 const STREAM_CHUNK_DELAY_MS = 120;
@@ -31,15 +34,15 @@ export class MockRealtimeProvider implements IRealtimeProvider {
     this.currentStepIndex = 0;
     try {
       this.scenario = await this.loadScenario();
-      this.options.onStatusChange('CONNECTING');
+      this.options.onStatusChange("CONNECTING");
       await this.delay(250);
-      this.options.onStatusChange('CONNECTED');
+      this.options.onStatusChange("CONNECTED");
       await this.delay(200);
-      this.options.onStatusChange('LISTENING');
+      this.options.onStatusChange("LISTENING");
       this.startIntervals();
     } catch (error) {
       this.options.onError(error as Error);
-      this.options.onStatusChange('FAILED');
+      this.options.onStatusChange("FAILED");
     }
   }
 
@@ -47,7 +50,7 @@ export class MockRealtimeProvider implements IRealtimeProvider {
     if (!this.sessionId) {
       return;
     }
-    this.options.onStatusChange('RECONNECTING');
+    this.options.onStatusChange("RECONNECTING");
     await this.connect(this.sessionId);
   }
 
@@ -55,7 +58,7 @@ export class MockRealtimeProvider implements IRealtimeProvider {
     this.cancelled = true;
     this.clearTimers();
     this.stopIntervals();
-    this.options.onStatusChange('IDLE');
+    this.options.onStatusChange("IDLE");
   }
 
   async startMic(): Promise<void> {
@@ -65,7 +68,9 @@ export class MockRealtimeProvider implements IRealtimeProvider {
     this.isPlaying = true;
     while (!this.cancelled && this.currentStepIndex < this.scenario.length) {
       const step = this.scenario[this.currentStepIndex];
-      await this.playStep(step);
+      if (step) {
+        await this.playStep(step);
+      }
       this.currentStepIndex += 1;
     }
     this.isPlaying = false;
@@ -76,7 +81,7 @@ export class MockRealtimeProvider implements IRealtimeProvider {
     this.clearTimers();
     this.options.onVadChange(false);
     this.options.onStreaming(null);
-    this.options.onStatusChange('LISTENING');
+    this.options.onStatusChange("LISTENING");
   }
 
   async speak(text: string): Promise<void> {
@@ -84,7 +89,7 @@ export class MockRealtimeProvider implements IRealtimeProvider {
       return;
     }
     const words = text.split(/\s+/).filter(Boolean);
-    let buffer = '';
+    let buffer = "";
     for (const word of words) {
       if (this.cancelled) {
         return;
@@ -96,31 +101,33 @@ export class MockRealtimeProvider implements IRealtimeProvider {
 
     const item: TranscriptItem = {
       id: crypto.randomUUID(),
-      speaker: 'agent',
+      speaker: "agent",
       text,
-      status: 'FINAL',
+      status: "FINAL",
       timestamp: Date.now(),
     };
     this.options.onAgentTranscript(item);
     this.options.onAgentStreaming(null);
 
-    if ('speechSynthesis' in window) {
+    if ("speechSynthesis" in window) {
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ko-KR';
+      utterance.lang = "ko-KR";
       window.speechSynthesis.speak(utterance);
     }
   }
 
   private async loadScenario(): Promise<MockScenarioStep[]> {
-    const response = await fetch(buildApiUrl('/api/mock-scenarios'));
+    const response = await fetch(buildApiUrl("/api/mock-scenarios"));
     if (!response.ok) {
       throw new Error(`Mock scenario load failed (${response.status})`);
     }
     const payload = (await response.json()) as MockScenarioPayload;
     const scenarioName =
       (import.meta.env.VITE_MOCK_SCENARIO as string | undefined) ??
-      'normal_flow';
-    return payload.scenarios[scenarioName] ?? payload.scenarios.normal_flow ?? [];
+      "normal_flow";
+    return (
+      payload.scenarios[scenarioName] ?? payload.scenarios.normal_flow ?? []
+    );
   }
 
   private async playStep(step: MockScenarioStep): Promise<void> {
@@ -129,7 +136,7 @@ export class MockRealtimeProvider implements IRealtimeProvider {
     }
     if (step.trigger_error) {
       this.options.onError(new Error(step.trigger_error));
-      this.options.onStatusChange('FAILED');
+      this.options.onStatusChange("FAILED");
       this.cancelled = true;
       return;
     }
@@ -139,7 +146,7 @@ export class MockRealtimeProvider implements IRealtimeProvider {
       return;
     }
     this.options.onVadChange(true);
-    this.options.onStatusChange('PROCESSING');
+    this.options.onStatusChange("PROCESSING");
 
     if (step.streaming_chunks?.length) {
       for (const chunk of step.streaming_chunks) {
@@ -157,13 +164,13 @@ export class MockRealtimeProvider implements IRealtimeProvider {
       await this.delay(200);
     }
 
-    const transcript = (step.user_input ?? '').trim();
+    const transcript = (step.user_input ?? "").trim();
     if (transcript) {
       const item: TranscriptItem = {
         id: crypto.randomUUID(),
-        speaker: 'patient',
+        speaker: "patient",
         text: transcript,
-        status: 'CONFIRMED',
+        status: "CONFIRMED",
         timestamp: Date.now(),
       };
       this.options.onTranscript(item);
@@ -174,7 +181,7 @@ export class MockRealtimeProvider implements IRealtimeProvider {
     }
 
     this.options.onVadChange(false);
-    this.options.onStatusChange('LISTENING');
+    this.options.onStatusChange("LISTENING");
   }
 
   private async sendToDsl(transcript: string): Promise<void> {
@@ -185,8 +192,8 @@ export class MockRealtimeProvider implements IRealtimeProvider {
       const response = await fetch(
         buildApiUrl(`/api/sessions/${this.sessionId}/process`),
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ user_input: transcript }),
         }
       );
@@ -229,7 +236,7 @@ export class MockRealtimeProvider implements IRealtimeProvider {
       rttMs: 80,
       jitterMs: 5,
       packetLossPercent: 0,
-      quality: 'GOOD',
+      quality: "GOOD",
     };
   }
 
